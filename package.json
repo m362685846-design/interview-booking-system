@@ -1,0 +1,13 @@
+{
+  "name": "interview-booking-system",
+  "version": "1.0.0",
+  "description": "面试预约系统 - 正式版",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "express": "^4.18.0",
+    "@cloudbase/node-sdk": "^3.0.0"
+  }
+}

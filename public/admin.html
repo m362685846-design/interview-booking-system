@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HR 管理后台</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif; background:linear-gradient(180deg,#fdf2f8 0%,#fce7f3 40%,#f5e6f3 100%); min-height:100vh; position:relative; }
+body::before {
+  content:''; position:fixed; top:0; left:0; right:0; bottom:0;
+  background:url('bg-pink-valley.png') no-repeat center bottom / cover;
+  opacity:0.6; pointer-events:none; z-index:0;
+}
+body::after {
+  content:''; position:fixed; top:0; left:0; right:0; bottom:0;
+  background:linear-gradient(180deg,rgba(253,242,248,0.4) 0%,rgba(252,231,243,0.2) 100%);
+  pointer-events:none; z-index:0;
+}
+.container { max-width:1000px; margin:0 auto; padding:20px; position:relative; z-index:1; }
+
+/* Login */
+.login-card { max-width:400px; margin:80px auto; background:rgba(255,255,255,0.95); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); border-radius:20px; box-shadow:0 8px 40px rgba(244,114,182,0.15); overflow:hidden; border:1px solid rgba(255,255,255,0.5); }
+.login-hd { background:linear-gradient(135deg,#f472b6,#ec4899,#db2777); color:#fff; padding:36px; text-align:center; box-shadow:0 4px 20px rgba(244,114,182,0.3); }
+.login-hd h1 { font-size:22px; }
+.login-bd { padding:36px; }
+.fg { margin-bottom:16px; }
+.fg label { display:block; font-size:14px; font-weight:600; color:#374151; margin-bottom:6px; }
+.fg input { width:100%; padding:12px 16px; border:2px solid #e5e7eb; border-radius:10px; font-size:15px; outline:none; }
+.fg input:focus { border-color:#f472b6; }
+.login-err { color:#dc2626; font-size:14px; margin-bottom:10px; display:none; }
+
+/* Header */
+.admin-hd { display:flex; justify-content:space-between; align-items:center; background:linear-gradient(135deg,#f472b6,#ec4899,#db2777); color:#fff; padding:24px 32px; border-radius:16px; margin-bottom:24px; box-shadow:0 4px 20px rgba(244,114,182,0.3); position:relative; }
+.admin-hd h1 { font-size:22px; }
+.admin-hd .user { display:flex; align-items:center; gap:12px; font-size:14px; }
+.admin-hd .user button { background:rgba(255,255,255,0.15); color:#fff; border:none; padding:8px 16px; border-radius:8px; cursor:pointer; font-size:13px; }
+.admin-hd .user button:hover { background:rgba(255,255,255,0.25); }
+
+.card { background:rgba(255,255,255,0.95); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); border-radius:16px; box-shadow:0 8px 32px rgba(244,114,182,0.12); margin-bottom:20px; border:1px solid rgba(255,255,255,0.5); }
+.card-hd { padding:20px 24px; border-bottom:1px solid #f0f0f0; display:flex; justify-content:space-between; align-items:center; color:#374151; }
+.card-hd h2 { font-size:17px; font-weight:600; }
+.card-bd { padding:20px 24px; color:#374151; }
+
+.btn { padding:10px 20px; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; transition:all 0.2s; }
+.btn-primary { background:linear-gradient(135deg,#f472b6,#ec4899); color:#fff; box-shadow:0 4px 15px rgba(244,114,182,0.3); }
+.btn-primary:hover { background:linear-gradient(135deg,#ec4899,#db2777); }
+.btn-sm { padding:6px 12px; font-size:12px; border-radius:6px; }
+.btn-danger { background:#dc2626; color:#fff; }
+.btn-danger:hover { background:#b91c1c; }
+.btn-success { background:#059669; color:#fff; }
+.btn-success:hover { background:#047857; }
+.btn-outline { background:transparent; border:2px solid #e5e7eb; color:#374151; }
+.btn-outline:hover { border-color:#f472b6; color:#f472b6; }
+.btn-warning { background:#d97706; color:#fff; }
+.btn-warning:hover { background:#b45309; }
+
+.pos-item { padding:16px 20px; border:1px solid #e5e7eb; border-radius:12px; margin-bottom:12px; }
+.pos-top { display:flex; justify-content:space-between; align-items:center; cursor:pointer; }
+.pos-name { font-weight:600; font-size:16px; }
+.pos-info { font-size:13px; color:#6b7280; margin-top:2px; }
+.pos-meta { display:flex; align-items:center; gap:10px; }
+.badge { padding:3px 10px; border-radius:12px; font-size:12px; font-weight:500; }
+.badge-pub { background:#d1fae5; color:#065f46; }
+.badge-draft { background:#fef3c7; color:#92400e; }
+.pos-actions { display:flex; gap:6px; }
+
+.pos-detail { margin-top:16px; padding-top:16px; border-top:1px solid #f0f0f0; display:none; }
+.pos-detail.open { display:block; }
+
+.tab-bar { display:flex; gap:4px; margin-bottom:12px; }
+.tab-bar button { padding:8px 16px; border:none; background:#f3f4f6; border-radius:8px; font-size:13px; cursor:pointer; }
+.tab-bar button.active { background:#f472b6; color:#fff; }
+.tab { display:none; }
+.tab.active { display:block; }
+
+.iv-row { display:flex; align-items:center; justify-content:space-between; padding:8px 12px; background:#f9fafb; border-radius:8px; margin-bottom:6px; font-size:14px; }
+.iv-label { color:#ec4899; font-weight:600; margin-right:8px; }
+
+.add-form { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+.add-form input { padding:8px 12px; border:2px solid #e5e7eb; border-radius:8px; font-size:14px; outline:none; flex:1; min-width:100px; }
+.add-form input:focus { border-color:#f472b6; }
+
+.slot-gen-box { background:#faf5f9; padding:16px; border-radius:10px; margin:8px 0; }
+.slot-gen-box .gr { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:10px; }
+.slot-gen-box label { font-size:13px; color:#6b7280; }
+.slot-gen-box input[type=date], .slot-gen-box select { padding:8px 12px; border:2px solid #e5e7eb; border-radius:8px; font-size:14px; outline:none; }
+.slot-gen-box input:focus { border-color:#f472b6; }
+.slot-tags { display:flex; flex-wrap:wrap; gap:4px; margin-top:8px; }
+.slot-tag { display:inline-block; padding:4px 10px; background:#fdf2f8; border-radius:6px; font-size:12px; }
+.slot-tag.booked { background:#fef2f2; color:#dc2626; }
+.slot-tag.clickable { cursor:pointer; transition:all 0.15s; }
+.slot-tag.clickable:hover { transform:scale(1.05); box-shadow:0 2px 8px rgba(0,0,0,0.1); }
+
+.btable { width:100%; border-collapse:collapse; font-size:14px; }
+.btable th { text-align:left; padding:10px 12px; background:#f9fafb; color:#6b7280; font-weight:600; font-size:12px; }
+.btable td { padding:10px 12px; border-bottom:1px solid #f0f0f0; }
+
+.empty { text-align:center; padding:40px; color:#9ca3af; }
+.empty .big { font-size:40px; margin-bottom:10px; }
+
+.modal-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.4); display:none; align-items:center; justify-content:center; z-index:100; }
+.modal-overlay.show { display:flex; }
+.modal { background:#fff; border-radius:16px; padding:32px; width:90%; max-width:450px; }
+.modal h3 { font-size:18px; margin-bottom:16px; }
+.modal-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:20px; }
+</style>
+</head>
+<body>
+
+<!-- 登录页 -->
+<div id="loginView" class="container">
+  <div class="login-card">
+    <div class="login-hd"><h1>🔧 HR 管理后台</h1></div>
+    <div class="login-bd">
+      <div id="loginErr" class="login-err"></div>
+      <div class="fg"><label>账号</label><input id="userInput" type="text" placeholder="请输入账号"></div>
+      <div class="fg"><label>密码</label><input id="passInput" type="password" placeholder="请输入密码" onkeydown="if(event.key==='Enter')login()"></div>
+      <button class="btn btn-primary" style="width:100%" onclick="login()">登录</button>
+    </div>
+  </div>
+</div>
+
+<!-- 管理后台 -->
+<div id="dashView" style="display:none;">
+  <div class="container">
+    <div class="admin-hd">
+      <h1>🔧 HR 管理后台</h1>
+      <div class="user"><span id="userDisplay"></span><button onclick="logout()">退出</button></div>
+    </div>
+
+    <div class="card">
+      <div class="card-hd"><h2>📌 岗位管理</h2><button class="btn btn-primary btn-sm" onclick="openCreatePos()">+ 新建</button></div>
+      <div class="card-bd" id="posList"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-hd"><h2>📋 预约记录</h2></div>
+      <div class="card-bd" id="allBkList"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-hd"><h2>🔑 安全设置</h2></div>
+      <div class="card-bd">
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end;">
+          <div class="fg" style="margin:0;flex:1;min-width:140px;">
+            <label>当前密码</label>
+            <input id="oldPwd" type="password" placeholder="输入当前密码" style="padding:10px 14px;border:2px solid #e5e7eb;border-radius:8px;font-size:14px;outline:none;width:100%;">
+          </div>
+          <div class="fg" style="margin:0;flex:1;min-width:140px;">
+            <label>新密码</label>
+            <input id="newPwd" type="password" placeholder="输入新密码" style="padding:10px 14px;border:2px solid #e5e7eb;border-radius:8px;font-size:14px;outline:none;width:100%;">
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="changePwd()" style="margin-bottom:1px;">修改密码</button>
+        </div>
+        <div id="pwdMsg" style="font-size:13px;margin-top:8px;color:#6b7280;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 新建岗位弹窗 -->
+<div id="createModal" class="modal-overlay">
+  <div class="modal">
+    <h3>新建岗位</h3>
+    <div class="fg"><label>岗位名称</label><input id="newPosName" placeholder="如：前端工程师-二面"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeCreatePos()">取消</button>
+      <button class="btn btn-primary" onclick="createPos()">创建</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let token = '';
+let expandedId = null;
+
+// ========== 全局工具 ==========
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+async function api(method, path, body) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000); // 15秒超时
+  try {
+    const opts = { method, headers:{authorization:token,'Content-Type':'application/json'}, signal:controller.signal };
+    if (body) opts.body = JSON.stringify(body);
+    const r = await fetch(path, opts);
+    clearTimeout(timeout);
+    if (r.status === 401) { alert('登录过期'); logout(); return null; }
+    return r.json();
+  } catch (e) {
+    clearTimeout(timeout);
+    if (e.name === 'AbortError') {
+      alert('请求超时，可能服务端数据库连接异常。请检查环境变量 TCB_ENV 和 API Key 设置。');
+    } else {
+      alert('网络错误：' + e.message);
+    }
+    return null;
+  }
+}
+
+// ========== 登录 ==========
+async function login() {
+  const u = document.getElementById('userInput').value.trim();
+  const p = document.getElementById('passInput').value.trim();
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+    const r = await fetch('/api/admin/login', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({username:u,password:p}), signal:controller.signal });
+    clearTimeout(timeout);
+    const d = await r.json();
+    if (d.success) {
+      token = d.token;
+      document.getElementById('userDisplay').textContent = d.username;
+      document.getElementById('loginView').style.display = 'none';
+      document.getElementById('dashView').style.display = 'block';
+      refreshAll();
+    } else {
+      document.getElementById('loginErr').textContent = '账号或密码错误';
+      document.getElementById('loginErr').style.display = 'block';
+    }
+  } catch (e) {
+    if (e.name === 'AbortError') {
+      document.getElementById('loginErr').textContent = '登录超时，请检查服务端数据库连接是否正常';
+    } else {
+      document.getElementById('loginErr').textContent = '网络错误：' + e.message;
+    }
+    document.getElementById('loginErr').style.display = 'block';
+  }
+}
+
+function logout() {
+  fetch('/api/admin/logout',{method:'POST',headers:{authorization:token}}).catch(()=>{});
+  token=''; expandedId=null;
+  document.getElementById('dashView').style.display='none';
+  document.getElementById('loginView').style.display='block';
+}
+
+// ========== 岗位管理 ==========
+function openCreatePos() { document.getElementById('createModal').classList.add('show'); document.getElementById('newPosName').value=''; }
+function closeCreatePos() { document.getElementById('createModal').classList.remove('show'); }
+async function createPos() {
+  const n = document.getElementById('newPosName').value.trim();
+  if (!n) return alert('请输入岗位名称');
+  await api('POST','/api/admin/positions',{name:n});
+  closeCreatePos(); refreshAll();
+}
+
+async function toggleStatus(id, cur) {
+  await api('PUT',`/api/admin/positions/${id}`,{status:cur==='published'?'draft':'published'});
+  refreshAll();
+}
+
+async function deletePos(id) {
+  if(!confirm('确定删除该岗位及相关数据？')) return;
+  await api('DELETE',`/api/admin/positions/${id}`);
+  if(expandedId===id) expandedId=null;
+  refreshAll();
+}
+
+// ========== 面试官 ==========
+async function addIv(posId) {
+  const n = document.getElementById('ivn_'+posId).value.trim();
+  if(!n) return alert('请填写姓名');
+  await api('POST',`/api/admin/positions/${posId}/interviewers`,{name:n});
+  refreshAll();
+}
+
+async function removeIv(posId, ivId) {
+  if(!confirm('确定移除该面试官？相关时段和预约记录也会一并清除。')) return;
+  await api('DELETE',`/api/admin/positions/${posId}/interviewers/${ivId}`);
+  refreshAll();
+}
+
+// ========== 白名单候选人 ==========
+async function addCandidate(posId) {
+  const n = document.getElementById('cn_'+posId).value.trim();
+  const p = document.getElementById('cp_'+posId).value.trim();
+  if (!n || !p) return alert('请填写姓名和手机号后4位');
+  if (!/^\d{4}$/.test(p)) return alert('手机号后4位必须是4位数字');
+  await api('POST',`/api/admin/positions/${posId}/candidates`,{name:n, phoneLast4:p});
+  refreshAll();
+}
+
+async function removeCandidate(posId, cId) {
+  if (!confirm('确定移除该候选人？候选人已预约的时段将被释放（解锁）。')) return;
+  await api('DELETE',`/api/admin/positions/${posId}/candidates/${cId}`);
+  refreshAll();
+}
+
+// ========== 批量导入 ==========
+async function importInterviewers(posId) {
+  const text = document.getElementById('ivImport_'+posId).value.trim();
+  if (!text) return alert('请粘贴面试官时间文本');
+  const dur = parseInt(document.getElementById('ivDur_'+posId).value);
+  const btn = document.querySelector('#ivImport_'+posId).parentElement.querySelector('.btn-primary');
+  btn.disabled = true; btn.textContent = '导入中...';
+  const d = await api('POST', `/api/admin/positions/${posId}/import-interviewers`, { text, durationMinutes: dur });
+  if (d && d.success) {
+    let msg = `✅ 新增 ${d.interviewersAdded} 位面试官`;
+    (d.slotStats||[]).forEach(s => { msg += `，${s.name}(${s.label}): ${s.slotsGenerated} 个时段`; });
+    document.getElementById('ivImportResult_'+posId).textContent = msg;
+  } else {
+    document.getElementById('ivImportResult_'+posId).textContent = '❌ ' + (d?.error || '导入失败');
+  }
+  btn.disabled = false; btn.textContent = '开始导入';
+  refreshAll();
+}
+
+async function batchImportCandidates(posId) {
+  const text = document.getElementById('candImport_'+posId).value.trim();
+  if (!text) return alert('请粘贴候选人文本');
+  const btn = document.querySelector('#candImport_'+posId).parentElement.querySelector('.btn-primary');
+  btn.disabled = true; btn.textContent = '导入中...';
+  const d = await api('POST', `/api/admin/positions/${posId}/candidates/batch`, { text });
+  if (d && d.success) {
+    document.getElementById('candImportResult_'+posId).textContent = `✅ 成功添加 ${d.added} 人${d.skipped > 0 ? `，${d.skipped} 条跳过` : ''}`;
+  } else {
+    document.getElementById('candImportResult_'+posId).textContent = '❌ ' + (d?.error || '导入失败');
+  }
+  btn.disabled = false; btn.textContent = '一键导入';
+  refreshAll();
+}
+
+// ========== 时段生成 ==========
+async function genSlots(posId) {
+  const date = document.getElementById('sd_'+posId).value;
+  if(!date) return alert('请选择日期');
+  const dur = parseInt(document.getElementById('dur_'+posId).value);
+
+  // 读取面试官 ID 列表
+  const ivIds = document.getElementById('ivData_'+posId).textContent.split(',').filter(Boolean);
+  const interviewerSlots = [];
+  ivIds.forEach(ivId => {
+    const timeRanges = [];
+    document.querySelectorAll('.iv_'+posId+'_'+ivId+':checked').forEach(cb => {
+      const [s,e] = cb.value.split('-');
+      timeRanges.push({start:s, end:e});
+    });
+    if (timeRanges.length) {
+      interviewerSlots.push({ interviewerId: ivId, timeRanges });
+    }
+  });
+
+  if (!interviewerSlots.length) return alert('请至少为一位面试官选择时段');
+
+  await api('POST', `/api/admin/positions/${posId}/slots/generate`, {
+    date, interviewerSlots, durationMinutes: dur
+  });
+  refreshAll();
+}
+
+async function clearSlots(posId) {
+  if(!confirm('确定清空该岗位所有时段？')) return;
+  await api('DELETE',`/api/admin/positions/${posId}/slots`);
+  refreshAll();
+}
+
+// ========== 渲染函数 ==========
+function renderIvTab(p) {
+  let html = '<div style="margin-bottom:12px;">';
+  html += '<div style="font-size:14px;color:#6b7280;margin-bottom:8px;font-weight:600;">面试官列表</div>';
+  if(!p.interviewers.length) {
+    html += '<div style="font-size:13px;color:#9ca3af;margin-bottom:12px;">暂未添加面试官</div>';
+  } else {
+    p.interviewers.forEach(iv => {
+      html += `<div class="iv-row"><span><span class="iv-label">${esc(iv.label)}</span> ${esc(iv.name)}</span>
+        <button class="btn btn-sm btn-danger" onclick="removeIv('${p.id}','${iv.id}')">移除</button></div>`;
+    });
+  }
+  html += '</div><div style="font-size:14px;color:#6b7280;margin-bottom:8px;font-weight:600;">添加面试官</div>';
+  html += `<div class="add-form">
+    <input id="ivn_${p.id}" placeholder="姓名" style="max-width:160px;">
+    <button class="btn btn-primary btn-sm" onclick="addIv('${p.id}')">添加</button>
+  </div>`;
+
+  // 批量导入
+  html += '<div style="margin-top:16px;padding-top:16px;border-top:2px dashed #e5e7eb;">';
+  html += '<div style="font-size:14px;color:#6b7280;margin-bottom:4px;font-weight:600;">📥 批量导入面试官和时段</div>';
+  html += '<div style="font-size:12px;color:#9ca3af;margin-bottom:8px;line-height:1.5;">粘贴 dodo 发送的面试官空闲时间文本，自动添加面试官并生成可预约时段。<br>格式：第一行姓名，后续每行 <code>日期 | 时段1, 时段2...</code>，不同面试官用空行分隔。</div>';
+  html += `<textarea id="ivImport_${p.id}" placeholder="示例：
+朱兴欣
+2026-07-23 | 10:00-12:00, 14:00-18:00
+2026-07-24 | 10:00-12:00
+
+刘成健
+2026-07-23 | 14:00-18:00
+2026-07-25 | 10:00-12:00" style="width:100%;min-height:110px;padding:10px;border:2px solid #e5e7eb;border-radius:8px;font-size:13px;outline:none;resize:vertical;font-family:monospace;box-sizing:border-box;"></textarea>`;
+  html += '<div style="display:flex;gap:10px;align-items:center;margin-top:8px;flex-wrap:wrap;">';
+  html += `<label style="font-size:13px;color:#6b7280;">每段时长</label>`;
+  html += `<select id="ivDur_${p.id}" style="padding:6px 10px;border:2px solid #e5e7eb;border-radius:6px;font-size:13px;"><option value="60">60 分钟</option><option value="30">30 分钟</option></select>`;
+  html += `<button class="btn btn-primary btn-sm" onclick="importInterviewers('${p.id}')">开始导入</button>`;
+  html += '</div>';
+  html += `<div id="ivImportResult_${p.id}" style="font-size:13px;margin-top:8px;color:#6b7280;"></div>`;
+  html += '</div>';
+
+  return html;
+}
+
+function renderSlotTab(p) {
+  // 如果没有面试官，提示先去添加
+  if (!p.interviewers.length) {
+    return '<div style="padding:20px;text-align:center;color:#9ca3af;font-size:14px;">👤 请先在「面试官」tab 中添加面试官，再为各面试官分配可用时段</div>';
+  }
+
+  let html = '<div class="slot-gen-box">';
+  html += `<div class="gr"><label>日期</label><input type="date" id="sd_${p.id}"></div>`;
+  html += '<div class="gr"><label>时长</label>';
+  html += `<select id="dur_${p.id}"><option value="60">60 分钟</option><option value="30">30 分钟</option></select>`;
+  html += '</div>';
+
+  // 每个面试官独立时段选择
+  const slotDefs = [
+    { start:'10:00', end:'11:00', label:'10:00' },
+    { start:'11:00', end:'12:00', label:'11:00' },
+    { start:'14:00', end:'15:00', label:'14:00' },
+    { start:'15:00', end:'16:00', label:'15:00' },
+    { start:'16:00', end:'17:00', label:'16:00' },
+    { start:'17:00', end:'18:00', label:'17:00' },
+    { start:'19:00', end:'20:00', label:'19:00' }
+  ];
+  p.interviewers.forEach((iv, idx) => {
+    html += `<div style="margin-top:${idx===0?8:16}px;padding:12px 14px;background:#f9fafb;border-radius:10px;border-left:3px solid #f472b6;">`;
+    html += `<div style="font-weight:600;font-size:14px;color:#ec4899;margin-bottom:8px;">${esc(iv.label)} <span style="font-weight:400;color:#6b7280;font-size:13px;">（${esc(iv.name)}）</span></div>`;
+    html += '<div style="display:flex;flex-wrap:wrap;gap:6px;">';
+    slotDefs.forEach(sd => {
+      html += `<label style="font-weight:400;font-size:13px;white-space:nowrap;padding:4px 10px;background:#fff;border:1px solid #e5e7eb;border-radius:6px;cursor:pointer;user-select:none;"><input type="checkbox" class="iv_${p.id}_${iv.id}" value="${sd.start}-${sd.end}" checked> ${sd.label}</label>`;
+    });
+    html += '</div></div>';
+  });
+
+  html += `<div style="margin-top:14px;"><button class="btn btn-primary btn-sm" onclick="genSlots('${p.id}')">生成全部时段</button></div>`;
+  // 隐藏的面试官 ID 列表
+  html += `<div id="ivData_${p.id}" style="display:none;">${p.interviewers.map(iv=>iv.id).join(',')}</div>`;
+  html += '</div>';
+
+  // 已有时段列表（可开关）
+  html += '<div style="font-size:14px;color:#6b7280;margin:16px 0 8px;font-weight:600;">当前时段（点击开关）</div>';
+  if(!p.slots.length) {
+    html += '<div style="font-size:13px;color:#9ca3af;">暂无时段</div>';
+  } else {
+    const grp = {};
+    p.slots.forEach(s => { if(!grp[s.date]) grp[s.date]=[]; grp[s.date].push(s); });
+    Object.keys(grp).sort().forEach(d => {
+      html += `<div style="font-weight:600;font-size:13px;color:#4b5563;margin:8px 0 4px;">${d}</div><div class="slot-tags">`;
+      grp[d].forEach(s => {
+        const isOn = s.status === 'available';
+        const isBk = s.status === 'booked';
+        html += `<span class="slot-tag ${isBk?'booked':''}" style="${isOn&&!isBk?'cursor:pointer;background:#d1fae5;':''}${!isOn&&!isBk?'cursor:pointer;background:#fee2e2;color:#dc2626;text-decoration:line-through;':''}" onclick="${isBk?'':`toggleSlot('${p.id}','${s.id}',this)`}">${esc(s.interviewerLabel)} ${s.start}-${s.end}${isBk?' 🔒':isOn?' ✅':' ❌'}</span>`;
+      });
+      html += '</div>';
+    });
+    html += `<div style="margin-top:10px;"><button class="btn btn-sm btn-danger" onclick="clearSlots('${p.id}')">清空所有时段</button></div>`;
+  }
+  return html;
+}
+
+function renderBkTab(bks, posId) {
+  if(!bks||!bks.length) return '<div class="empty"><div class="big">📭</div><div>暂无预约</div></div>';
+  const stMap = {'booked':'面试已安排好啦','next_round':'下一轮','offer':'Offer','rejected':'淘汰'};
+  let html = `<div style="margin-bottom:10px;"><button class="btn btn-sm btn-primary" onclick="exportPositionBookings('${posId}')">📋 导出预约文本</button></div>`;
+  html += '<table class="btable"><tr><th>候选人</th><th>手机尾号</th><th>面试官</th><th>时间</th><th>状态</th><th>操作</th></tr>';
+  bks.forEach(b => {
+    const st = stMap[b.status] || '已预约';
+    html += `<tr>
+      <td>${esc(b.candidateName)}</td>
+      <td>${esc(b.candidatePhone||'-')}</td>
+      <td>${esc(b.interviewerName)}</td>
+      <td>${b.slotDate} ${b.slotStart}-${b.slotEnd}</td>
+      <td id="st_${b.id}">${st}</td>
+      <td>
+        <select onchange="updateBkStatus('${b.id}',this.value)" style="padding:4px 8px;border:2px solid #e5e7eb;border-radius:6px;font-size:12px;">
+          <option value="booked" ${b.status==='booked'?'selected':''}>面试已安排好啦</option>
+          <option value="next_round" ${b.status==='next_round'?'selected':''}>下一轮</option>
+          <option value="offer" ${b.status==='offer'?'selected':''}>Offer</option>
+          <option value="rejected" ${b.status==='rejected'?'selected':''}>淘汰</option>
+        </select>
+        ${b.status==='booked' ? `<button class="btn btn-sm btn-warning" onclick="revertBooking('${b.id}')" style="margin-left:4px;font-size:11px;padding:4px 6px;">退回</button>` : ''}
+      </td>
+    </tr>`;
+  });
+  html += '</table>';
+  return html;
+}
+
+function renderCandidateTab(p) {
+  let html = '<div style="margin-bottom:12px;">';
+  html += '<div style="font-size:14px;color:#6b7280;margin-bottom:8px;font-weight:600;">预设候选人（仅名单内的人可预约）</div>';
+  const cands = p.allowedCandidates || [];
+  if (!cands.length) {
+    html += '<div style="font-size:13px;color:#9ca3af;margin-bottom:12px;">暂未添加候选人</div>';
+  } else {
+    html += '<div style="margin-bottom:10px;">';
+    cands.forEach(c => {
+      html += `<div class="iv-row"><span><strong>${esc(c.name)}</strong> · 手机尾号 ${esc(c.phoneLast4)}</span>
+        <button class="btn btn-sm btn-danger" onclick="removeCandidate('${p.id}','${c.id}')">移除</button></div>`;
+    });
+    html += '</div>';
+  }
+  html += '<div style="font-size:14px;color:#6b7280;margin-bottom:8px;font-weight:600;">添加候选人</div>';
+  html += `<div class="add-form">
+    <input id="cn_${p.id}" placeholder="姓名" style="max-width:150px;">
+    <input id="cp_${p.id}" placeholder="手机号后4位" maxlength="4" style="max-width:130px;">
+    <button class="btn btn-primary btn-sm" onclick="addCandidate('${p.id}')">添加</button>
+  </div>`;
+
+  // 批量导入候选人
+  html += '<div style="margin-top:16px;padding-top:16px;border-top:2px dashed #e5e7eb;">';
+  html += '<div style="font-size:14px;color:#6b7280;margin-bottom:4px;font-weight:600;">📥 批量导入候选人</div>';
+  html += '<div style="font-size:12px;color:#9ca3af;margin-bottom:8px;">每行一个候选人，姓名和手机号后4位用空格/逗号分隔</div>';
+  html += `<textarea id="candImport_${p.id}" placeholder="张三 1234&#10;李四 5678&#10;王五 9012" style="width:100%;min-height:70px;padding:10px;border:2px solid #e5e7eb;border-radius:8px;font-size:13px;outline:none;resize:vertical;font-family:monospace;box-sizing:border-box;"></textarea>`;
+  html += `<div style="margin-top:8px;"><button class="btn btn-primary btn-sm" onclick="batchImportCandidates('${p.id}')">一键导入</button></div>`;
+  html += `<div id="candImportResult_${p.id}" style="font-size:13px;margin-top:6px;color:#6b7280;"></div>`;
+  html += '</div>';
+
+  return html;
+}
+
+// ========== 导出预约 ==========
+function copyText(text) {
+  try {
+    navigator.clipboard.writeText(text).then(() => alert('✅ 已复制到剪贴板'));
+  } catch {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    alert('✅ 已复制到剪贴板');
+  }
+}
+
+async function exportAllBookings() {
+  const data = await api('GET','/api/admin/bookings');
+  if (!data || !data.bookings.length) return alert('暂无预约记录');
+  const stMap = {'booked':'面试已安排好啦','next_round':'下一轮','offer':'Offer','rejected':'淘汰'};
+  const groups = {};
+  data.bookings.forEach(b => {
+    if (!groups[b.positionName]) groups[b.positionName] = [];
+    groups[b.positionName].push(b);
+  });
+  let text = '📋 面试预约记录\n' + '='.repeat(40) + '\n\n';
+  Object.keys(groups).forEach(posName => {
+    text += `【${posName}】\n`;
+    text += `候选人\t手机尾号\t面试官\t时间\t状态\n`;
+    groups[posName].forEach(b => {
+      text += `${b.candidateName}\t${b.candidatePhone||'-'}\t${b.interviewerName}\t${b.slotDate} ${b.slotStart}-${b.slotEnd}\t${stMap[b.status]||'已预约'}\n`;
+    });
+    text += '\n';
+  });
+  copyText(text);
+}
+
+async function exportFilteredBookings() {
+  const posId = document.getElementById('exportPosSelect').value;
+  const posName = document.getElementById('exportPosSelect').selectedOptions[0].text;
+  const data = await api('GET','/api/admin/bookings');
+  if (!data || !data.bookings.length) return alert('暂无预约记录');
+  const stMap = {'booked':'面试已安排好啦','next_round':'下一轮','offer':'Offer','rejected':'淘汰'};
+  let bks = data.bookings;
+  if (posId) bks = bks.filter(b => b.positionId === posId);
+  if (!bks.length) return alert('该岗位暂无预约记录');
+  let text = posId ? `【${posName}】` : '📋 面试预约记录\n' + '='.repeat(40);
+  text += '\n候选人 | 手机尾号 | 面试官 | 时间 | 状态\n';
+  bks.forEach(b => {
+    text += `${b.candidateName} | ${b.candidatePhone||'-'} | ${b.interviewerName} | ${b.slotDate} ${b.slotStart}-${b.slotEnd} | ${stMap[b.status]||'已预约'}\n`;
+  });
+  copyText(text);
+}
+
+async function clearProcessedBookings() {
+  const data = await api('GET','/api/admin/bookings');
+  const processed = (data?.bookings||[]).filter(b => ['next_round','offer','rejected'].includes(b.status));
+  if (!processed.length) return alert('没有已处理的预约记录需要清理');
+  if (!confirm(`确定清理 ${processed.length} 条已处理的预约记录吗？（包括：下一轮/Offer/淘汰）`)) return;
+  const d = await api('DELETE', '/api/admin/bookings/processed');
+  if (d && d.success) {
+    alert(`✅ 已清理 ${d.deletedCount} 条已处理的预约记录`);
+    refreshAll();
+  } else {
+    alert('清理失败');
+  }
+}
+
+async function exportPositionBookings(posId) {
+  const data = await api('GET','/api/admin/bookings');
+  if (!data) return;
+  const bks = data.bookings.filter(b => b.positionId === posId);
+  if (!bks.length) return alert('该岗位暂无预约记录');
+  const stMap = {'booked':'面试已安排好啦','next_round':'下一轮','offer':'Offer','rejected':'淘汰'};
+  const posName = bks[0].positionName;
+  let text = `【${posName}】\n候选人 | 手机尾号 | 面试官 | 时间 | 状态\n`;
+  bks.forEach(b => {
+    text += `${b.candidateName} | ${b.candidatePhone||'-'} | ${b.interviewerName} | ${b.slotDate} ${b.slotStart}-${b.slotEnd} | ${stMap[b.status]||'已预约'}\n`;
+  });
+  copyText(text);
+}
+
+async function updateBkStatus(bookingId, status) {
+  const d = await api('PUT', `/api/admin/bookings/${bookingId}/status`, { status });
+  if (d && d.success) {
+    const stMap = {'booked':'面试已安排好啦','next_round':'下一轮','offer':'Offer','rejected':'淘汰'};
+    document.getElementById('st_'+bookingId).textContent = stMap[status] || '已预约';
+  } else {
+    alert('状态更新失败');
+  }
+}
+
+// 全部预约列表中的状态更新（用 st2_ 前缀避免 id 冲突）
+async function updateBkStatus2(bookingId, status) {
+  const d = await api('PUT', `/api/admin/bookings/${bookingId}/status`, { status });
+  if (d && d.success) {
+    const stMap = {'booked':'面试已安排好啦','next_round':'下一轮','offer':'Offer','rejected':'淘汰'};
+    document.getElementById('st2_'+bookingId).textContent = stMap[status] || '已预约';
+  } else {
+    alert('状态更新失败');
+  }
+}
+
+// 退回预约（释放时段并删除预约记录，候选人需重新选择）
+async function revertBooking(bookingId, rowId) {
+  if (!confirm('确定退回该预约？候选人登录后将需要重新选择时段。')) return;
+  const d = await api('POST', `/api/admin/bookings/${bookingId}/revert`);
+  if (d && d.success) {
+    alert('✅ 预约已退回，时段已释放');
+    refreshAll();
+  } else {
+    alert(d?.error || '退回失败');
+  }
+}
+
+// ========== 时段开关 ==========
+async function toggleSlot(posId, slotId, el) {
+  const d = await api('PUT', `/api/admin/positions/${posId}/slots/${slotId}/toggle`);
+  if (d && d.success) {
+    if (d.status === 'disabled') {
+      el.style.background = '#fee2e2';
+      el.style.color = '#dc2626';
+      el.style.textDecoration = 'line-through';
+      el.textContent = el.textContent.replace('✅','❌');
+    } else {
+      el.style.background = '#d1fae5';
+      el.style.color = '';
+      el.style.textDecoration = '';
+      el.textContent = el.textContent.replace('❌','✅');
+    }
+  } else {
+    alert(d?.error || '操作失败');
+  }
+}
+
+// ========== 加载数据 ==========
+async function refreshAll() {
+  await Promise.all([loadPositions(), loadAllBookings()]);
+}
+
+async function loadPositions() {
+  const data = await api('GET','/api/admin/positions');
+  if(!data) return;
+  const ps = data.positions||[];
+  const el = document.getElementById('posList');
+
+  if(!ps.length) {
+    el.innerHTML = '<div class="empty"><div class="big">📋</div><div>暂无岗位，点击"新建"创建</div></div>';
+    return;
+  }
+
+  // 获取所有预约数据（用于预约tab）
+  const bkData = await api('GET','/api/admin/bookings');
+  const allBks = bkData?bkData.bookings||[]:[];
+
+  el.innerHTML = ps.map(p => {
+    const bks = allBks.filter(b => b.positionId === p.id);
+    return `<div class="pos-item">
+      <div class="pos-top" onclick="togglePos('${p.id}')">
+        <div>
+          <div class="pos-name">${esc(p.name)}</div>
+          <div class="pos-info">${p.interviewers.length} 位面试官 · ${p.slots.filter(s=>s.status==='available').length} 个可用 · ${p.slots.filter(s=>s.status==='booked').length} 个已约</div>
+        </div>
+        <div class="pos-meta">
+          <span class="badge ${p.status==='published'?'badge-pub':'badge-draft'}">${p.status==='published'?'已发布':'草稿'}</span>
+          <div class="pos-actions" onclick="event.stopPropagation()">
+            <button class="btn btn-sm ${p.status==='published'?'btn-warning':'btn-success'}" onclick="toggleStatus('${p.id}','${p.status}')">${p.status==='published'?'下架':'发布'}</button>
+            <button class="btn btn-sm btn-danger" onclick="deletePos('${p.id}')">删除</button>
+          </div>
+        </div>
+      </div>
+      <div class="pos-detail ${expandedId===p.id?'open':''}" id="det_${p.id}">
+        <div class="tab-bar">
+          <button class="active" onclick="switchTab('${p.id}','iv',this)">👤 面试官</button>
+          <button onclick="switchTab('${p.id}','slot',this)">📅 时段</button>
+          <button onclick="switchTab('${p.id}','cand',this)">👥 候选人</button>
+          <button onclick="switchTab('${p.id}','bk',this)">📋 预约</button>
+        </div>
+        <div class="tab active" id="tab_iv_${p.id}">${renderIvTab(p)}</div>
+        <div class="tab" id="tab_slot_${p.id}">${renderSlotTab(p)}</div>
+        <div class="tab" id="tab_cand_${p.id}">${renderCandidateTab(p)}</div>
+        <div class="tab" id="tab_bk_${p.id}">${renderBkTab(bks, p.id)}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function loadAllBookings() {
+  const data = await api('GET','/api/admin/bookings');
+  if(!data) return;
+  const posData = await api('GET','/api/admin/positions');
+  const el = document.getElementById('allBkList');
+  const bks = data.bookings||[];
+  if(!bks.length) {
+    el.innerHTML = '<div class="empty"><div class="big">📭</div><div>暂无预约记录</div></div>';
+    return;
+  }
+  const stMap = {'booked':'面试已安排好啦','next_round':'下一轮','offer':'Offer','rejected':'淘汰'};
+  let html = '<div style="margin-bottom:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">';
+  // 岗位筛选 + 导出
+  html += '<label style="font-size:13px;color:#6b7280;">按岗位导出</label>';
+  html += '<select id="exportPosSelect" style="padding:6px 10px;border:2px solid #e5e7eb;border-radius:6px;font-size:13px;">';
+  html += '<option value="">全部岗位</option>';
+  (posData?.positions||[]).forEach(p => {
+    html += `<option value="${p.id}">${esc(p.name)}</option>`;
+  });
+  html += '</select>';
+  html += `<button class="btn btn-sm btn-primary" onclick="exportFilteredBookings()">📋 导出</button>`;
+  // 清理已处理
+  html += `<span style="flex:1;"></span>`;
+  html += `<button class="btn btn-sm btn-danger" onclick="clearProcessedBookings()">🗑️ 清理已处理</button>`;
+  html += '</div>';
+  html += '<table class="btable"><tr><th>岗位</th><th>候选人</th><th>手机尾号</th><th>面试官</th><th>时间</th><th>状态</th><th>操作</th></tr>';
+  bks.forEach(b => {
+    const st = stMap[b.status] || '已预约';
+    html += `<tr>
+      <td>${esc(b.positionName)}</td>
+      <td>${esc(b.candidateName)}</td>
+      <td>${esc(b.candidatePhone||'-')}</td>
+      <td>${esc(b.interviewerName)}</td>
+      <td>${b.slotDate} ${b.slotStart}-${b.slotEnd}</td>
+      <td id="st2_${b.id}">${st}</td>
+      <td>
+        <select onchange="updateBkStatus2('${b.id}',this.value)" style="padding:4px 8px;border:2px solid #e5e7eb;border-radius:6px;font-size:12px;">
+          <option value="booked" ${b.status==='booked'?'selected':''}>面试已安排好啦</option>
+          <option value="next_round" ${b.status==='next_round'?'selected':''}>下一轮</option>
+          <option value="offer" ${b.status==='offer'?'selected':''}>Offer</option>
+          <option value="rejected" ${b.status==='rejected'?'selected':''}>淘汰</option>
+        </select>
+        ${b.status==='booked' ? `<button class="btn btn-sm btn-warning" onclick="revertBooking('${b.id}')" style="margin-left:4px;font-size:11px;padding:4px 6px;">退回</button>` : ''}
+      </td>
+    </tr>`;
+  });
+  html += '</table>';
+  el.innerHTML = html;
+}
+
+function togglePos(id) { expandedId = expandedId===id ? null : id; loadPositions(); }
+
+function switchTab(posId, tab, btn) {
+  document.querySelectorAll(`#det_${posId} .tab-bar button`).forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll(`#det_${posId} .tab`).forEach(t=>t.classList.remove('active'));
+  document.getElementById(`tab_${tab}_${posId}`).classList.add('active');
+}
+
+// 如果已登录，刷新数据
+
+// ====== 修改密码 ======
+async function changePwd() {
+  const oldPwd = document.getElementById('oldPwd').value;
+  const newPwd = document.getElementById('newPwd').value;
+  if (!oldPwd || !newPwd) { document.getElementById('pwdMsg').textContent = '⚠️ 请填写完整'; return; }
+  if (newPwd.length < 4) { document.getElementById('pwdMsg').textContent = '⚠️ 新密码至少4位'; return; }
+  const d = await api('POST', '/api/admin/change-password', { oldPassword: oldPwd, newPassword: newPwd });
+  if (d.success) {
+    document.getElementById('pwdMsg').textContent = '✅ 密码修改成功！请记住新密码';
+    document.getElementById('oldPwd').value = '';
+    document.getElementById('newPwd').value = '';
+  } else {
+    document.getElementById('pwdMsg').textContent = '❌ ' + (d.error || '修改失败');
+  }
+  setTimeout(() => { document.getElementById('pwdMsg').textContent = ''; }, 5000);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,251 @@
+{
+  "positions": [
+    {
+      "id": "pos_1",
+      "name": "前端工程师-一面",
+      "status": "published",
+      "interviewers": [
+        {
+          "id": "iv_1",
+          "name": "朱兴欣",
+          "email": "zhuxingxin@baidu.com",
+          "label": "面试官A"
+        },
+        {
+          "id": "iv_2",
+          "name": "刘成健",
+          "email": "liuchengjian@baidu.com",
+          "label": "面试官B"
+        }
+      ],
+      "slots": [
+        {
+          "id": "mrvvmom9j5pk",
+          "interviewerId": "iv_1",
+          "interviewerLabel": "面试官A",
+          "date": "2026-07-23",
+          "start": "10:00",
+          "end": "11:00",
+          "status": "available",
+          "candidateName": null
+        },
+        {
+          "id": "mrvvmom9g414",
+          "interviewerId": "iv_1",
+          "interviewerLabel": "面试官A",
+          "date": "2026-07-23",
+          "start": "11:00",
+          "end": "12:00",
+          "status": "available",
+          "candidateName": null
+        },
+        {
+          "id": "mrvvmom90suy",
+          "interviewerId": "iv_1",
+          "interviewerLabel": "面试官A",
+          "date": "2026-07-23",
+          "start": "14:00",
+          "end": "15:00",
+          "status": "available",
+          "candidateName": null
+        },
+        {
+          "id": "mrvvmom94o52",
+          "interviewerId": "iv_1",
+          "interviewerLabel": "面试官A",
+          "date": "2026-07-23",
+          "start": "15:00",
+          "end": "16:00",
+          "status": "available",
+          "candidateName": null
+        },
+        {
+          "id": "mrvvmom9wdng",
+          "interviewerId": "iv_2",
+          "interviewerLabel": "面试官B",
+          "date": "2026-07-23",
+          "start": "14:00",
+          "end": "15:00",
+          "status": "available",
+          "candidateName": null
+        },
+        {
+          "id": "mrvvmom9kcy8",
+          "interviewerId": "iv_2",
+          "interviewerLabel": "面试官B",
+          "date": "2026-07-23",
+          "start": "15:00",
+          "end": "16:00",
+          "status": "available",
+          "candidateName": null
+        },
+        {
+          "id": "mrvvmom9h8zw",
+          "interviewerId": "iv_2",
+          "interviewerLabel": "面试官B",
+          "date": "2026-07-23",
+          "start": "16:00",
+          "end": "17:00",
+          "status": "available",
+          "candidateName": null
+        },
+        {
+          "id": "mrvvmom96g5e",
+          "interviewerId": "iv_2",
+          "interviewerLabel": "面试官B",
+          "date": "2026-07-23",
+          "start": "17:00",
+          "end": "18:00",
+          "status": "available",
+          "candidateName": null
+        }
+      ],
+      "allowedCandidates": [
+        {
+          "id": "c_1",
+          "name": "张三",
+          "phoneLast4": "1234"
+        },
+        {
+          "id": "c_2",
+          "name": "李四",
+          "phoneLast4": "5678"
+        },
+        {
+          "id": "c_3",
+          "name": "王五",
+          "phoneLast4": "9012"
+        },
+        {
+          "id": "mrvvmoldo9t6",
+          "name": "赵六",
+          "phoneLast4": "3456"
+        },
+        {
+          "id": "mrvvmold28cn",
+          "name": "钱七",
+          "phoneLast4": "7890"
+        }
+      ],
+      "createdAt": "2026-07-21T17:00:00.000Z"
+    },
+    {
+      "id": "p_2",
+      "name": "前端工程师-二面",
+      "status": "draft",
+      "interviewers": [
+        {
+          "id": "iv_3",
+          "name": "王珊珊",
+          "email": "wangshanshan@baidu.com",
+          "label": "面试官A"
+        }
+      ],
+      "slots": [],
+      "allowedCandidates": [],
+      "createdAt": "2026-07-21T17:00:00.000Z"
+    },
+    {
+      "id": "mrxcvn2ihgtn",
+      "name": "测试岗位",
+      "status": "draft",
+      "interviewers": [
+        {
+          "id": "mrxcvn3819bt",
+          "name": "张三",
+          "email": "",
+          "label": "面试官A"
+        },
+        {
+          "id": "mrxcvn3vsjnc",
+          "name": "李四",
+          "email": "",
+          "label": "面试官B"
+        }
+      ],
+      "slots": [
+        {
+          "id": "mrxcvn4f34qw",
+          "interviewerId": "mrxcvn3819bt",
+          "interviewerLabel": "面试官A",
+          "date": "2026-07-24",
+          "start": "10:00",
+          "end": "11:00",
+          "status": "available",
+          "candidateName": null
+        },
+        {
+          "id": "mrxcvn4fbru8",
+          "interviewerId": "mrxcvn3819bt",
+          "interviewerLabel": "面试官A",
+          "date": "2026-07-24",
+          "start": "11:00",
+          "end": "12:00",
+          "status": "available",
+          "candidateName": null
+        },
+        {
+          "id": "mrxcvn4fnfiz",
+          "interviewerId": "mrxcvn3819bt",
+          "interviewerLabel": "面试官A",
+          "date": "2026-07-24",
+          "start": "14:00",
+          "end": "15:00",
+          "status": "available",
+          "candidateName": null
+        },
+        {
+          "id": "mrxcvn4fsf6e",
+          "interviewerId": "mrxcvn3vsjnc",
+          "interviewerLabel": "面试官B",
+          "date": "2026-07-24",
+          "start": "14:00",
+          "end": "15:00",
+          "status": "available",
+          "candidateName": null
+        },
+        {
+          "id": "mrxcvn4f4nug",
+          "interviewerId": "mrxcvn3vsjnc",
+          "interviewerLabel": "面试官B",
+          "date": "2026-07-24",
+          "start": "15:00",
+          "end": "16:00",
+          "status": "available",
+          "candidateName": null
+        },
+        {
+          "id": "mrxcvn4fos1f",
+          "interviewerId": "mrxcvn3vsjnc",
+          "interviewerLabel": "面试官B",
+          "date": "2026-07-24",
+          "start": "16:00",
+          "end": "17:00",
+          "status": "available",
+          "candidateName": null
+        },
+        {
+          "id": "mrxcvn4fwuze",
+          "interviewerId": "mrxcvn3vsjnc",
+          "interviewerLabel": "面试官B",
+          "date": "2026-07-24",
+          "start": "19:00",
+          "end": "20:00",
+          "status": "available",
+          "candidateName": null
+        }
+      ],
+      "allowedCandidates": [],
+      "createdAt": "2026-07-23T10:15:48.618Z"
+    },
+    {
+      "id": "mrxd7v1xqsmq",
+      "name": "测试岗位-导出",
+      "status": "draft",
+      "interviewers": [],
+      "slots": [],
+      "allowedCandidates": [],
+      "createdAt": "2026-07-23T10:25:18.837Z"
+    }
+  ]
+}

@@ -1,0 +1,141 @@
+import { ICloudBaseConfig } from '../../types'
+import * as utils from '../utils/utils'
+import { ERROR } from '../const/code'
+
+interface IErrorInfo {
+  requestId?: string
+  code?: string
+  message?: string
+}
+
+export class TcbError extends Error {
+  public readonly code: string
+  public readonly message: string
+  public readonly requestId: string
+
+  public constructor(error: IErrorInfo) {
+    super(error.message)
+    this.code = error.code
+    this.message = error.message
+    this.requestId = error.requestId || ''
+  }
+}
+
+export function isAppId(appIdStr: string) {
+  return /^[1-9][0-9]{4,64}$/gim.test(appIdStr)
+}
+
+export function filterValue(o, value) {
+  for (const key in o) {
+    if (o[key] === value) {
+      /* eslint-disable-next-line @typescript-eslint/no-dynamic-delete */
+      delete o[key]
+    }
+  }
+}
+
+export function filterUndefined(o) {
+  filterValue(o, undefined)
+}
+
+export function E(errObj: IErrorInfo) {
+  return new TcbError(errObj)
+}
+
+export function isNonEmptyString(str: string) {
+  return typeof str === 'string' && str !== ''
+}
+
+export function second(): number {
+  // istanbul ignore next
+  return Math.floor(new Date().getTime() / 1000)
+}
+
+// 兼容模式开关，兼容模式下，不抛出异常，直接返回
+let throwOnCode = true
+
+export function setThrowOnCode(value: boolean) {
+  throwOnCode = value
+}
+
+export function processReturn(result: any) {
+  if (!throwOnCode) {
+    // 不抛报错，直接返回
+    return result
+  }
+
+  throw E({ ...result })
+}
+
+/**
+ * 是否是场景模块名
+ *
+ * $: 前缀，表示SaaS场景模块名，非实际环境ID，当前通过特殊环境ID标识
+ *
+ * @param envId
+ * @returns
+ */
+export function isPageModuleName(envId = '') {
+  return typeof envId === 'string' && envId.startsWith('$:')
+}
+
+// 20 + 1 + 16, 限制长度 40
+const kEnvRuleReg = /^[a-z0-9_-]{1,40}$/
+
+export function isValidEnvFormat(env = '') {
+  return typeof env === 'string' && kEnvRuleReg.test(env)
+}
+export function normalizeConfig(config: ICloudBaseConfig) {
+  const { debug = false, secretId, secretKey, env, timeout = 15000, headers = {}, accessKey } = config
+
+  // 检查用户显示配置的 secretId 和 secretKey 是否成对出现，要么都有，要么都没有
+  if (!secretId !== !secretKey) {
+    throw utils.E({
+      ...ERROR.INVALID_PARAM,
+      message: 'secretId and secretKey must be a pair'
+    })
+  }
+  const cloudbaseConfigBase: ICloudBaseConfig = {
+    ...config,
+    debug,
+    // secretId,
+    // secretKey,
+    envName: env,
+    headers: { ...headers }, // 结构用户传进来的 headers，防止用户修改原对象
+    timeout
+    // accessKey: accessKey || process.env.CLOUDBASE_APIKEY
+  }
+  const {
+    CLOUDBASE_APIKEY
+  } = process.env
+  // 如果用户显示配置了accessKey，取用户显示配置的 accessKey,优先级最高
+  if (accessKey) {
+    return Object.assign(cloudbaseConfigBase, { secretId: undefined, secretKey: undefined, accessKey })
+  }
+  // 显示配置了 secretId, secretKey，取 secretId, secretKey
+  if (secretId && secretKey) {
+    return Object.assign(cloudbaseConfigBase, { secretId, secretKey, accessKey: undefined })
+  }
+  // 下面从环境变量取 accessKey
+  if (CLOUDBASE_APIKEY) {
+    return Object.assign(cloudbaseConfigBase, { secretId: undefined, secretKey: undefined, accessKey: CLOUDBASE_APIKEY })
+  }
+  // 注意：不从环境变量读取 TENCENTCLOUD_SECRETID/SECRETKEY/SESSIONTOKEN 并固化到 config 中
+  // 这些临时密钥（尤其在 SCF 环境下）可能会过期，应在每次请求时由 prepareCredentials() -> getCredentialsOnDemand() 动态获取
+  if (config.context?.extendedContext) {
+    const extendedContext = config.context.extendedContext
+    if (!cloudbaseConfigBase.env) {
+      cloudbaseConfigBase.env = extendedContext.envId
+      cloudbaseConfigBase.envName = extendedContext.envId
+    }
+
+    // 从 context 中获取 secret
+    if (!cloudbaseConfigBase.secretId && !cloudbaseConfigBase.secretKey) {
+      cloudbaseConfigBase.secretId = extendedContext?.tmpSecret?.secretId
+      cloudbaseConfigBase.secretKey = extendedContext?.tmpSecret?.secretKey
+      cloudbaseConfigBase.sessionToken = extendedContext?.tmpSecret?.token
+    }
+  }
+  // 都没有配置，返回原始的配置
+  return cloudbaseConfigBase
+}

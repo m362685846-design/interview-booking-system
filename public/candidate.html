@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>候选人面试预约</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: linear-gradient(180deg, #fdf2f8 0%, #fce7f3 40%, #f5e6f3 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 40px 20px;
+      position: relative;
+      overflow-x: hidden;
+    }
+    /* 粉色山谷背景图 */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: url('bg-pink-valley.png') no-repeat center bottom / cover;
+      opacity: 0.7;
+      pointer-events: none;
+      z-index: 0;
+    }
+    body::after {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(180deg, rgba(253,242,248,0.5) 0%, rgba(252,231,243,0.3) 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container { max-width: 640px; width: 100%; position: relative; z-index: 1; }
+    .card {
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-radius: 20px;
+      box-shadow: 0 8px 40px rgba(244,114,182,0.15), 0 0 80px rgba(244,114,182,0.08);
+      overflow: hidden;
+      margin-bottom: 20px;
+      border: 1px solid rgba(255,255,255,0.6);
+    }
+    .card-header {
+      background: linear-gradient(135deg, #f472b6, #ec4899, #db2777);
+      color: #fff;
+      padding: 36px 40px 28px;
+      position: relative;
+      overflow: hidden;
+    }
+    .card-header::after {
+      content: '';
+      position: absolute;
+      top: -50%; right: -20%;
+      width: 200px; height: 200px;
+      background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    .card-header h1 { font-size: 22px; margin-bottom: 6px; position: relative; }
+    .card-header p { font-size: 14px; opacity: 0.9; position: relative; }
+    .card-body { padding: 28px 36px 36px; }
+    .card-body h2 { font-size: 18px; margin-bottom: 16px; color: #1e293b; }
+
+    .step { display: none; }
+    .step.active { display: block; }
+
+    .pos-list { display: flex; flex-direction: column; gap: 10px; }
+    .pos-item {
+      width: 100%; padding: 16px 20px;
+      border: 2px solid #f0e6f0; border-radius: 12px;
+      background: #fafafa; font-size: 16px; font-weight: 600;
+      cursor: pointer; text-align: left; transition: all 0.2s;
+    }
+    .pos-item:hover { border-color: #f472b6; background: #fdf2f8; transform: translateY(-1px); }
+
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 14px; font-weight: 600; color: #1e293b; margin-bottom: 6px; }
+    .form-group input {
+      width: 100%; padding: 12px 16px;
+      border: 2px solid #e5e7eb; border-radius: 10px;
+      font-size: 15px; outline: none; transition: border-color 0.2s;
+    }
+    .form-group input:focus { border-color: #f472b6; }
+
+    .btn {
+      padding: 12px 32px; background: linear-gradient(135deg, #f472b6, #ec4899);
+      color: #fff;
+      border: none; border-radius: 10px; font-size: 16px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 15px rgba(244,114,182,0.3);
+    }
+    .btn:hover { background: linear-gradient(135deg, #ec4899, #db2777); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(244,114,182,0.4); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn-secondary { background: rgba(255,255,255,0.85); color: #374151; box-shadow: none; border: 1px solid #f0e6f0; }
+    .btn-secondary:hover { background: #f3f4f6; transform: none; box-shadow: none; }
+
+    .iv-group {
+      margin-bottom: 20px; padding: 16px 20px;
+      background: #faf5f9; border-radius: 12px;
+      border: 1px solid #f0e6f0;
+    }
+    .iv-group .iv-title {
+      font-weight: 600; color: #4b5563;
+      margin-bottom: 10px; font-size: 15px;
+    }
+    .slot-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+    .slot-chip {
+      padding: 10px 18px;
+      border: 2px solid #e5e7eb; border-radius: 10px;
+      font-size: 14px; text-align: center;
+      cursor: pointer; transition: all 0.2s; background: #fff;
+      min-width: 120px;
+    }
+    .slot-chip:hover:not(.booked) { border-color: #f472b6; background: #fdf2f8; }
+    .slot-chip.selected { border-color: #ec4899; background: #f472b6; color: #fff; }
+    .slot-chip.booked { border-color: #fecaca; background: #fef2f2; color: #dc2626; cursor: not-allowed; opacity: 0.6; }
+    .slot-chip .date-text { font-size: 11px; opacity: 0.7; display: block; margin-top: 2px; }
+
+    .confirmation { text-align: center; padding: 20px 0; }
+    .confirmation .big-icon { font-size: 56px; margin-bottom: 12px; }
+    .confirmation h2 { color: #065f46; font-size: 22px; margin-bottom: 10px; }
+    .confirmation .detail-box {
+      display: inline-block; margin: 16px 0; padding: 16px 32px;
+      background: #fdf2f8; border: 2px solid #f472b6;
+      border-radius: 12px; font-weight: 600; font-size: 18px; color: #be185d;
+      line-height: 1.6;
+    }
+
+    .error-msg {
+      padding: 12px 16px; background: #fef2f2;
+      border: 1px solid #fecaca; border-radius: 10px;
+      color: #dc2626; font-size: 14px; margin: 10px 0;
+    }
+    .loading { text-align: center; padding: 40px; color: #6b7280; }
+    .spinner {
+      display: inline-block; width: 32px; height: 32px;
+      border: 3px solid #fce7f3; border-top-color: #f472b6;
+      border-radius: 50%; animation: spin 0.8s linear infinite;
+      margin-bottom: 10px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .msg-success { padding:14px 18px; border-radius:12px; background:#ecfdf5; border:1px solid #6ee7b7; color:#065f46; font-size:14px; }
+    .msg-info { padding:14px 18px; border-radius:12px; background:#fdf2f8; border:1px solid #fbcfe8; color:#be185d; font-size:14px; }
+    .msg-neutral { padding:16px 20px; border-radius:12px; background:rgba(249,250,251,0.97); border:1px solid #e5e7eb; color:#4b5563; font-size:14px; line-height:1.8; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="card-header">
+        <h1>📅 面试时间预约</h1>
+        <p>选择岗位 → 验证身份 → 选择时段 → 确认预约</p>
+      </div>
+      <div class="card-body">
+
+        <!-- Step 1: 选岗位 -->
+        <div id="s1" class="step active">
+          <h2>选择岗位</h2>
+          <div id="posList" class="pos-list">
+            <div class="loading"><div class="spinner"></div><div>加载中...</div></div>
+          </div>
+        </div>
+
+        <!-- Step 2: 验证身份 -->
+        <div id="s2" class="step">
+          <h2>验证身份</h2>
+          <p style="color:#6b7280;font-size:14px;margin-bottom:16px;">
+            已选：<strong id="posNameDisplay"></strong>
+          </p>
+          <div class="form-group">
+            <label>姓名 *</label>
+            <input id="nameInput" type="text" placeholder="请输入您的姓名" maxlength="20">
+          </div>
+          <div class="form-group">
+            <label>手机号后4位 *</label>
+            <input id="phoneInput" type="text" placeholder="请输入手机号后4位" maxlength="4" inputmode="numeric">
+          </div>
+          <div style="display:flex;gap:10px;">
+            <button class="btn btn-secondary" onclick="goStep(1)">返回</button>
+            <button class="btn" onclick="loadSlots()">验证身份 &rarr;</button>
+          </div>
+        </div>
+
+        <!-- Step 3: 选时段 -->
+        <div id="s3" class="step">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <h2 style="margin:0;">选择时间</h2>
+            <span id="candidateLabel" style="font-size:14px;color:#6b7280;"></span>
+          </div>
+          <div id="currentBookingInfo" style="display:none;margin-bottom:16px;padding:16px;background:#eef2ff;border-radius:12px;border:1px solid #c7d2fe;">
+            <div style="font-weight:600;color:#ec4899;">面试已安排好啦 ✓</div>
+            <div id="existingBookingDetail" style="font-size:14px;color:#374151;margin:8px 0;"></div>
+            <button class="btn btn-sm" style="font-size:13px;padding:6px 16px;" onclick="startChange()">✏️ 修改时间</button>
+          </div>
+          <div id="slotsArea"></div>
+          <div id="bookError" class="error-msg" style="display:none;"></div>
+          <div style="display:flex;gap:10px;margin-top:16px;" id="slotActions">
+            <button class="btn btn-secondary" onclick="goStep(2)">返回</button>
+            <button class="btn" id="bookBtn" onclick="bookNow()" disabled>请先选择一个时段</button>
+          </div>
+        </div>
+
+        <!-- Step 4: 确认 -->
+        <div id="s4" class="step confirmation">
+          <div class="big-icon">✅</div>
+          <h2 id="confirmTitle">预约成功！</h2>
+          <p id="confirmDesc">面试已安排好啦，安心准备就好</p>
+          <div class="detail-box" id="confDetail"></div>
+          <p style="color:#6b7280;font-size:14px;margin-top:8px;">放轻松，真实的你，就是最好的你。🌟</p>
+          <button class="btn" style="margin-top:20px;" onclick="location.href='/'">返回首页</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let posId = '', posName = '', candidateName = '', candidatePhone = '';
+    let selectedSlotId = null;
+    let allSlotsData = null;
+    let isChanging = false; // true = 修改模式，false = 新预约模式
+    let existingBooking = null;
+
+    function getStatusDisplay(status) {
+      const msgs = {
+        'next_round': {
+          title: '面得不错！你打动面试官了',
+          text: '你的专业能力和思考都留下了很深的印象。\n\nHR会尽快通过邮箱或电话联系你。\n\n在那之前，深呼吸，\n为自己这段时间的努力鼓鼓掌吧～🎉',
+          cls: 'msg-success'
+        },
+        'offer': {
+          title: '你被录取了！欢迎加入我们',
+          text: '你的才华、真诚和努力，我们全都看在眼里。\n\n接下来正式 offer 会通过邮件发给你。\n\n未来路，我们一起走～🍃',
+          cls: 'msg-success'
+        },
+        'rejected': {
+          title: '',
+          text: '很遗憾这次没能拥有继续同行的缘分。\n\n但你在面试中展现的每一个闪光点，我们都看到了。\n勇敢成长的人，总会有更广阔的天地。\n而每一段经历，都不会白走。\n\n少年的征途是星辰大海，\n而我们一直在路上。\n那些星星虽然遥远，但你迈出的每一步都在接近。\n\n我们一起进步，期待再见的那天。\n到那时，我们都成了更好的彼此。\n\n你要去的远方，一定开满鲜花。\n我们相信你，也祝福你。🌱',
+          cls: 'msg-neutral'
+        },
+        'booked': {
+          title: '面试已安排好啦，安心准备就好',
+          text: '同学你好～\n你的面试时间已锁定，面试官在那里等你。\n\n放轻松，真实的你，就是最好的你。🌟',
+          cls: 'msg-info'
+        }
+      };
+      return msgs[status] || msgs.booked;
+    }
+
+    async function loadPositions() {
+      try {
+        const r = await fetch('/api/positions');
+        const d = await r.json();
+        if (!d.positions.length) {
+          document.getElementById('posList').innerHTML = '<p style="color:#6b7280;">暂无已发布的岗位</p>';
+          return;
+        }
+        document.getElementById('posList').innerHTML = d.positions.map(p =>
+          `<button class="pos-item" onclick="pickPos('${p.id}','${p.name}')">${p.name}</button>`
+        ).join('');
+      } catch (e) {
+        document.getElementById('posList').innerHTML = '<div class="error-msg">加载失败，请刷新页面</div>';
+      }
+    }
+
+    function pickPos(id, name) {
+      posId = id; posName = name;
+      document.getElementById('posNameDisplay').textContent = name;
+      isChanging = false;
+      existingBooking = null;
+      goStep(2);
+    }
+
+    function goStep(n) {
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      document.getElementById('s' + n).classList.add('active');
+    }
+
+    // 验证身份 -> 先查白名单，再查是否已预约
+    async function loadSlots() {
+      candidateName = document.getElementById('nameInput').value.trim();
+      candidatePhone = document.getElementById('phoneInput').value.trim();
+      if (!candidateName) return alert('请输入姓名');
+      if (!candidatePhone || !/^\d{4}$/.test(candidatePhone)) return alert('请输入正确的手机号后4位');
+
+      document.getElementById('candidateLabel').textContent = candidateName + ' 你好 👋';
+      document.getElementById('slotsArea').innerHTML = '<div class="loading"><div class="spinner"></div><div>验证中...</div></div>';
+      document.getElementById('bookError').style.display = 'none';
+      document.getElementById('currentBookingInfo').style.display = 'none';
+
+      try {
+        const r = await fetch(`/api/positions/${posId}/verify?name=${encodeURIComponent(candidateName)}&phoneLast4=${encodeURIComponent(candidatePhone)}`);
+        const d = await r.json();
+
+        if (!d.verified) {
+          document.getElementById('slotsArea').innerHTML = '<div class="error-msg">' + (d.message || '验证失败') + '</div>';
+          return;
+        }
+
+        if (d.existingBooking) {
+          // 已预约 → 显示已有预约和状态，提供修改入口
+          existingBooking = d.existingBooking;
+          isChanging = false;
+          const status = existingBooking.status || 'booked';
+          const si = getStatusDisplay(status);
+          // 重置可见状态
+          const infoEl = document.getElementById('currentBookingInfo');
+          infoEl.querySelector('div:first-child').style.display = '';
+          infoEl.querySelector('button').style.display = '';
+
+          if (status === 'rejected') {
+            // 已淘汰：只显示抱歉文案
+            infoEl.querySelector('div:first-child').style.display = 'none';
+            infoEl.querySelector('button').style.display = 'none';
+            document.getElementById('existingBookingDetail').innerHTML =
+              '<div class="' + si.cls + '">' +
+              '<div style="font-size:14px;line-height:1.7;white-space:pre-line;">' + si.text + '</div></div>';
+          } else {
+            document.getElementById('existingBookingDetail').innerHTML =
+              '<div style="margin-bottom:12px;font-size:15px;">' +
+              existingBooking.slotDate + ' ' + existingBooking.slotStart + '-' + existingBooking.slotEnd +
+              ' · ' + existingBooking.interviewerLabel + '</div>' +
+              '<div class="' + si.cls + '">' +
+              (si.title ? '<div style="font-weight:600;margin-bottom:4px;">' + si.title + '</div>' : '') +
+              '<div style="font-size:14px;line-height:1.7;white-space:pre-line;">' + si.text + '</div></div>';
+          }
+          infoEl.style.display = 'block';
+          document.getElementById('slotsArea').innerHTML = '';
+          document.getElementById('slotActions').style.display = 'none';
+          goStep(3);
+          return;
+        }
+      } catch(e) {
+        document.getElementById('slotsArea').innerHTML = '<div class="error-msg">网络错误，请重试</div>';
+        return;
+      }
+
+      // 新预约 → 展示可用时段
+      isChanging = false;
+      existingBooking = null;
+      document.getElementById('currentBookingInfo').style.display = 'none';
+      document.getElementById('slotActions').style.display = 'flex';
+      goStep(3);
+      showAvailableSlots();
+    }
+
+    // 修改模式：释放旧时段 + 展示可用
+    function startChange() {
+      isChanging = true;
+      document.getElementById('currentBookingInfo').style.display = 'none';
+      document.getElementById('slotActions').style.display = 'flex';
+      selectedSlotId = null;
+      document.getElementById('bookBtn').disabled = true;
+      document.getElementById('bookBtn').textContent = '请先选择一个时段';
+      document.getElementById('bookError').style.display = 'none';
+      showAvailableSlots();
+    }
+
+    async function showAvailableSlots() {
+      selectedSlotId = null;
+      document.getElementById('bookBtn').disabled = true;
+      document.getElementById('bookBtn').textContent = '请先选择一个时段';
+      document.getElementById('slotsArea').innerHTML = '<div class="loading"><div class="spinner"></div><div>加载可用时段...</div></div>';
+
+      try {
+        const r = await fetch(`/api/positions/${posId}/slots`);
+        const d = await r.json();
+
+        if (d.error) {
+          document.getElementById('slotsArea').innerHTML = '<div class="error-msg">' + d.error + '</div>';
+          return;
+        }
+
+        let html = '';
+        if (!d.interviewerSlots || d.interviewerSlots.length === 0) {
+          html = '<div class="error-msg">该岗位暂无可用时段</div>';
+        } else {
+          d.interviewerSlots.forEach(g => {
+            html += '<div class="iv-group">';
+            html += '<div class="iv-title">' + g.label + '</div>';
+            html += '<div class="slot-grid">';
+            g.slots.forEach(s => {
+              html += '<div class="slot-chip" data-id="' + s.id + '" onclick="pickSlot(this)">';
+              html += s.start + '-' + s.end;
+              html += '<span class="date-text">' + s.date + '</span>';
+              html += '</div>';
+            });
+            html += '</div></div>';
+          });
+        }
+        document.getElementById('slotsArea').innerHTML = html;
+      } catch (e) {
+        document.getElementById('slotsArea').innerHTML = '<div class="error-msg">网络错误，请重试</div>';
+      }
+    }
+
+    function pickSlot(el) {
+      if (el.classList.contains('booked')) return;
+      document.querySelectorAll('.slot-chip.selected').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+      selectedSlotId = el.dataset.id;
+      document.getElementById('bookBtn').disabled = false;
+      document.getElementById('bookBtn').textContent = isChanging ? '确认修改 ✓' : '确认预约 ✓';
+    }
+
+    async function bookNow() {
+      if (!selectedSlotId) return;
+      document.getElementById('bookBtn').disabled = true;
+      document.getElementById('bookBtn').textContent = '提交中...';
+      document.getElementById('bookError').style.display = 'none';
+
+      try {
+        let r, result;
+
+        if (isChanging && existingBooking) {
+          // 修改模式：调 change 接口
+          r = await fetch('/api/book/change', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              positionId: posId,
+              candidateName,
+              candidatePhone,
+              newSlotId: selectedSlotId
+            })
+          });
+          result = await r.json();
+
+          if (result.success) {
+            document.getElementById('confirmTitle').textContent = '修改成功！';
+            document.getElementById('confirmDesc').textContent = '您的面试时间已更新';
+            document.getElementById('confDetail').innerHTML =
+              result.booking.positionName + '<br>' +
+              result.booking.slotDate + ' ' + result.booking.slotStart + '-' + result.booking.slotEnd;
+            goStep(4);
+          } else {
+            document.getElementById('bookError').textContent = result.error || '修改失败';
+            document.getElementById('bookError').style.display = 'block';
+            document.getElementById('bookBtn').disabled = false;
+            document.getElementById('bookBtn').textContent = '确认修改 ✓';
+          }
+        } else {
+          // 新预约模式
+          r = await fetch('/api/book', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              positionId: posId,
+              candidateName,
+              candidatePhone,
+              slotId: selectedSlotId
+            })
+          });
+          result = await r.json();
+
+          if (r.status === 409) {
+            if (result.existingBooking) {
+              document.getElementById('bookError').textContent = '⚠️ 您已预约过该岗位，不能重复预约';
+            } else {
+              document.getElementById('bookError').textContent = '⏰ 该时段已被选走，请选择其他时段';
+            }
+            document.getElementById('bookError').style.display = 'block';
+            selectedSlotId = null;
+            document.getElementById('bookBtn').textContent = '请先选择一个时段';
+            showAvailableSlots();
+            return;
+          }
+
+          if (result.success) {
+            document.getElementById('confirmTitle').textContent = '预约成功！';
+            document.getElementById('confirmDesc').textContent = '您的面试时间已确认';
+            document.getElementById('confDetail').innerHTML =
+              result.booking.positionName + '<br>' +
+              result.booking.slotDate + ' ' + result.booking.slotStart + '-' + result.booking.slotEnd;
+            goStep(4);
+          } else {
+            document.getElementById('bookError').textContent = result.error || '预约失败';
+            document.getElementById('bookError').style.display = 'block';
+            document.getElementById('bookBtn').disabled = false;
+            document.getElementById('bookBtn').textContent = '确认预约 ✓';
+          }
+        }
+      } catch (e) {
+        document.getElementById('bookError').textContent = '网络错误，请重试';
+        document.getElementById('bookError').style.display = 'block';
+        document.getElementById('bookBtn').disabled = false;
+        document.getElementById('bookBtn').textContent = isChanging ? '确认修改 ✓' : '确认预约 ✓';
+      }
+    }
+
+    loadPositions();
+  </script>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>面试预约系统</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: linear-gradient(180deg, #fdf2f8 0%, #fce7f3 40%, #f5e6f3 100%);
+      color: #1a1a2e;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      position: relative;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: url('bg-pink-valley.png') no-repeat center bottom / cover;
+      opacity: 0.6;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .landing {
+      max-width: 480px;
+      width: 100%;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(8px);
+      border-radius: 24px;
+      box-shadow: 0 8px 40px rgba(244,114,182,0.15);
+      overflow: hidden;
+      position: relative;
+      z-index: 1;
+    }
+    .landing-header {
+      background: linear-gradient(135deg, #f472b6, #ec4899, #db2777);
+      color: #fff;
+      padding: 48px 36px 36px;
+      text-align: center;
+    }
+    .landing-header h1 { font-size: 28px; margin-bottom: 8px; }
+    .landing-header p { opacity: 0.9; font-size: 15px; line-height: 1.6; }
+    .landing-body { padding: 36px; }
+    .role-btn {
+      display: block;
+      width: 100%;
+      padding: 20px 24px;
+      border: 2px solid #f0e6f0;
+      border-radius: 16px;
+      background: #fff;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: left;
+      margin-bottom: 16px;
+    }
+    .role-btn:hover {
+      border-color: #f472b6;
+      background: #fdf2f8;
+      transform: translateY(-2px);
+    }
+    .role-btn .desc {
+      font-size: 13px;
+      font-weight: 400;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+    .role-btn .icon { font-size: 24px; margin-right: 12px; }
+  </style>
+</head>
+<body>
+  <div class="landing">
+    <div class="landing-header">
+      <h1>面试预约系统</h1>
+      <p>请选择您的身份进入</p>
+    </div>
+    <div class="landing-body">
+      <button class="role-btn" onclick="location.href='/candidate'">
+        <span class="icon">👤</span> 候选人
+        <div class="desc">查看可选岗位，预约面试时间</div>
+      </button>
+      <button class="role-btn" onclick="location.href='/admin'">
+        <span class="icon">🔧</span> HR / 管理员
+        <div class="desc">管理岗位、面试官、查看预约记录</div>
+      </button>
+    </div>
+  </div>
+</body>
+</html>
